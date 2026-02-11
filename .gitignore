@@ -1,0 +1,11 @@
+# Frontend build artifacts and deps
+frontend/node_modules
+frontend/build
+
+# OS/editor noise
+.DS_Store
+*.log
+
+# Environment files
+*.env
+*.env.local
