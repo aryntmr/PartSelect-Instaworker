@@ -1,0 +1,8 @@
+# Database Dependencies
+psycopg2-binary==2.9.9  # PostgreSQL adapter
+pandas==2.2.1  # Data processing
+python-dotenv==1.0.1  # Environment variables
+
+# Optional: Database migration tools
+# alembic==1.13.1  # Database migrations
+# sqlalchemy==2.0.25  # ORM (if needed)
