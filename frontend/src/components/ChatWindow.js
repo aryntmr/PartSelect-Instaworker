@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import "./ChatWindow.css";
 import { getAIMessage } from "../api/api";
 import { marked } from "marked";
-import PartCard from "./PartCard";
+// DISABLED: Card feature temporarily disabled
+// import PartCard from "./PartCard";
 
 function ChatWindow() {
 
@@ -59,13 +60,14 @@ function ChatWindow() {
                           <div dangerouslySetInnerHTML={{__html: marked(message.content).replace(/<p>|<\/p>/g, "")}}></div>
                       </div>
                   )}
-                  {message.role === "assistant" && message.products && message.products.length > 0 && (
+                  {/* DISABLED: Product cards feature temporarily disabled - text-only mode */}
+                  {/* {message.role === "assistant" && message.products && message.products.length > 0 && (
                       <div className="product-cards-container">
                           {message.products.map((product) => (
                               <PartCard key={product.part_id} product={product} />
                           ))}
                       </div>
-                  )}
+                  )} */}
               </div>
           ))}
           <div ref={messagesEndRef} />
