@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import "./ChatWindow.css";
 import { getAIMessage } from "../api/api";
 import { marked } from "marked";
+import PartCard from "./PartCard";
 
 function ChatWindow() {
 
@@ -10,8 +11,9 @@ function ChatWindow() {
     content: "Hi, how can I help you today?"
   }];
 
-  const [messages,setMessages] = useState(defaultMessage)
+  const [messages, setMessages] = useState(defaultMessage);
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const messagesEndRef = useRef(null);
 
@@ -23,15 +25,28 @@ function ChatWindow() {
       scrollToBottom();
   }, [messages]);
 
-  const handleSend = async (input) => {
-    if (input.trim() !== "") {
+  const handleSend = async (inputText) => {
+    if (inputText.trim() !== "" && !isLoading) {
       // Set user message
-      setMessages(prevMessages => [...prevMessages, { role: "user", content: input }]);
+      setMessages(prevMessages => [...prevMessages, { role: "user", content: inputText }]);
       setInput("");
+      setIsLoading(true);
 
-      // Call API & set assistant message
-      const newMessage = await getAIMessage(input);
-      setMessages(prevMessages => [...prevMessages, newMessage]);
+      try {
+        // Call API & set assistant message
+        const newMessage = await getAIMessage(inputText);
+        setMessages(prevMessages => [...prevMessages, newMessage]);
+      } catch (error) {
+        console.error('Error in handleSend:', error);
+        // Add error message to chat
+        setMessages(prevMessages => [...prevMessages, {
+          role: "assistant",
+          content: "An error occurred while processing your request. Please try again.",
+          products: []
+        }]);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -44,9 +59,23 @@ function ChatWindow() {
                           <div dangerouslySetInnerHTML={{__html: marked(message.content).replace(/<p>|<\/p>/g, "")}}></div>
                       </div>
                   )}
+                  {message.role === "assistant" && message.products && message.products.length > 0 && (
+                      <div className="product-cards-container">
+                          {message.products.map((product) => (
+                              <PartCard key={product.part_id} product={product} />
+                          ))}
+                      </div>
+                  )}
               </div>
           ))}
           <div ref={messagesEndRef} />
+          {isLoading && (
+            <div className="assistant-message-container">
+              <div className="message assistant-message">
+                <div>Searching...</div>
+              </div>
+            </div>
+          )}
           <div className="input-area">
             <input
               value={input}
@@ -60,8 +89,12 @@ function ChatWindow() {
               }}
               rows="3"
             />
-            <button className="send-button" onClick={handleSend}>
-              Send
+            <button 
+              className="send-button" 
+              onClick={() => handleSend(input)}
+              disabled={isLoading || input.trim() === ""}
+            >
+              {isLoading ? "Sending..." : "Send"}
             </button>
           </div>
       </div>
