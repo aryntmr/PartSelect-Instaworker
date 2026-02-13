@@ -1,7 +1,44 @@
-fastapi==0.109.0
-uvicorn[standard]==0.27.0
-pydantic>=2.7.4
-psycopg2-binary>=2.9.11
-python-dotenv>=1.0.0
-langchain>=1.2.0
-langchain-community>=0.4.0
+# Core Web Framework
+fastapi==0.128.8
+uvicorn[standard]==0.40.0
+pydantic==2.12.5
+pydantic-settings==2.12.0
+python-dotenv==1.2.1
+
+# Database
+psycopg2-binary==2.9.11
+SQLAlchemy==2.0.46
+
+# LangChain & AI Agent Framework
+langchain==1.2.10
+langchain-core==1.2.11
+langchain-community==0.4.1
+langchain-anthropic==1.3.3
+langchain-openai==1.1.9
+langchain-text-splitters==1.1.0
+langgraph==1.0.8
+langgraph-checkpoint==4.0.0
+langsmith==0.7.1
+
+# Anthropic Claude
+anthropic==0.79.0
+
+# Vector Search & Embeddings
+sentence-transformers==5.2.2
+faiss-cpu==1.13.2
+chromadb==1.5.0
+
+# ML/AI Dependencies
+torch==2.10.0
+transformers==5.1.0
+huggingface_hub==1.4.1
+tokenizers==0.22.2
+safetensors==0.7.0
+numpy==2.4.2
+scikit-learn==1.8.0
+scipy==1.17.0
+
+# Utilities
+requests==2.32.5
+python-dateutil==2.9.0.post0
+tenacity==9.1.4

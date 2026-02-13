@@ -4,7 +4,7 @@ import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
-from typing import List, Dict, Optional
+from typing import List, Dict
 import sys
 
 # Load environment variables
@@ -89,78 +89,8 @@ class DatabaseService:
         
         cursor.close()
         conn.close()
-        
+
         return [dict(row) for row in results]
-    
-    def get_part_by_id(self, part_id: str) -> Optional[Dict]:
-        """
-        Get complete details for a specific part.
-        
-        Args:
-            part_id: UUID of the part
-            
-        Returns:
-            Part details or None if not found
-        """
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        
-        query = """
-        SELECT
-            p.*,
-            COALESCE(
-                json_agg(
-                    json_build_object(
-                        'model_number', m.model_number,
-                        'model_url', m.model_url
-                    )
-                ) FILTER (WHERE m.model_id IS NOT NULL),
-                '[]'::json
-            ) as compatible_models
-        FROM parts p
-        LEFT JOIN part_model_mapping pmm ON p.part_id = pmm.part_id
-        LEFT JOIN models m ON pmm.model_id = m.model_id
-        WHERE p.part_id = %s
-        GROUP BY p.part_id;
-        """
-        
-        cursor.execute(query, (part_id,))
-        result = cursor.fetchone()
-        
-        cursor.close()
-        conn.close()
-        
-        return dict(result) if result else None
-    
-    def get_compatible_models(self, part_id: str, limit: int = 10) -> List[str]:
-        """
-        Get list of compatible model numbers for a part.
-        
-        Args:
-            part_id: UUID of the part
-            limit: Maximum models to return
-            
-        Returns:
-            List of model numbers
-        """
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        
-        query = """
-        SELECT m.model_number 
-        FROM models m
-        JOIN part_model_mapping pmm ON m.model_id = pmm.model_id
-        WHERE pmm.part_id = %s
-        LIMIT %s;
-        """
-        
-        cursor.execute(query, (part_id, limit))
-        results = cursor.fetchall()
-        
-        cursor.close()
-        conn.close()
-        
-        return [row['model_number'] for row in results]
 
 
 # Singleton instance

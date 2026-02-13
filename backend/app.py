@@ -4,7 +4,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routes.health import router as health_router
 from routes.chat import router as chat_router
-from routes.parts import router as parts_router
 
 
 def create_app():
@@ -44,8 +43,7 @@ API for searching and retrieving appliance parts information.
     # Include routers
     app.include_router(health_router)
     app.include_router(chat_router)
-    app.include_router(parts_router)
-    
+
     return app
 
 

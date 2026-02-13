@@ -95,7 +95,7 @@ def scrape_category_listing(appliance_type, url, max_parts=60):
                     'part_id': part_number,
                     'part_name': part_name,
                     'part_number': part_number,
-                    'manufacturer_part_number': part_number,  # Will be enriched later
+                    'manufacturer_part_number': '',  # Will be extracted from product page
                     'brand': brand,
                     'appliance_type': appliance_type,
                     'current_price': 0.0,  # Will be enriched

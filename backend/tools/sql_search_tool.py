@@ -34,8 +34,8 @@ Execute SQL queries against the PostgreSQL database to retrieve structured infor
 Table: parts (Main Product Catalog)
 - part_id (UUID, PK): Unique database identifier for JOINs
 - part_name (VARCHAR 255): Human-readable part name (e.g., "Door Shelf Bin", "Ice Maker Assembly")
-- manufacturer_part_number (VARCHAR 100, UNIQUE): Official manufacturer part number (e.g., "WPW10321304")
-- part_number (VARCHAR 100): PartSelect internal SKU (e.g., "PS11752778")
+- manufacturer_part_number (VARCHAR 100, UNIQUE): Manufacturer's official part number (e.g., "WPW10321304")
+- part_number (VARCHAR 100): PartSelect internal SKU (e.g., "PS11752778"). **NOTE: Currently empty/unused in database**
 - brand (VARCHAR 100): Manufacturer name (Whirlpool, GE, Samsung, LG, etc.)
 - appliance_type (VARCHAR 50): "refrigerator" or "dishwasher"
 - current_price (DECIMAL 10,2): Current selling price in USD

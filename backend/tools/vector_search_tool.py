@@ -28,48 +28,16 @@ _vector_store_cache = None
 
 # Tool description
 TOOL_DESCRIPTION = """
-Search the PartSelect knowledge base using semantic search. This tool performs natural language search over 366 documents including blog articles, repair guides, and company policies to find relevant information about appliance troubleshooting, repair instructions, and policies.
+Semantic search across PartSelect knowledge base: repair guides, troubleshooting articles, and policy documents.
 
-**Database Content:**
-- 180 blog article chunks (dishwasher & refrigerator troubleshooting and repair advice)
-- 178 repair guide chunks (part-specific repair instructions with symptoms)
-- 8 policy chunks (returns, warranties, shipping, etc.)
+**Content:** Repair documents (symptom-specific troubleshooting), blog articles (how-to guides, error codes, maintenance), policy documents (returns 365-day, warranty 1-year, shipping)
 
-**When to Use This Tool:**
-- User asks troubleshooting questions (e.g., "Why is my ice maker not working?")
-- User needs repair/how-to instructions (e.g., "How do I replace a door seal?")
-- User asks about company policies (e.g., "What's your return policy?")
-- User needs general appliance maintenance advice
-- User describes symptoms and needs solutions
+**When to use:** Troubleshooting questions, repair instructions, policy questions, symptom diagnosis
+**When NOT to use:** Part details (price/availability), model compatibility, product specs - use SQL tool instead
 
-**When NOT to Use This Tool (use SQL tool instead):**
-- User needs specific part details (price, part number, availability)
-- User wants to browse parts by category
-- User asks about model compatibility
-- User needs exact product specifications
-
-**Search Behavior:**
-- Uses semantic/similarity search (finds conceptually similar content, not just keyword matches)
-- Returns most relevant chunks ranked by similarity
-- Can filter by document type (blog, repair, policy) or appliance type (refrigerator, dishwasher)
-- Content is chunked (1000 chars with 200 char overlap), so related info may span multiple results
-
-**Best Practices:**
-- Use natural, conversational queries (e.g., "refrigerator is leaking water" not "leak refrigerator")
-- Be specific to get better results (e.g., "ice maker not making ice" vs "ice maker problem")
-- Use filters when you know the document or appliance type to narrow results
-- Request k=5-10 for most queries (higher for exploratory, lower for specific questions)
-- Check multiple results as similar information may appear in different documents
-
-**Examples:**
-
-| User Query | Tool Input | Rationale |
-|------------|-----------|-----------|
-| "My ice maker stopped working" | query="ice maker not working", k=5 | General troubleshooting query |
-| "How do I replace a dishwasher door seal?" | query="replace door seal", appliance_type="dishwasher", k=5 | Specific repair instruction |
-| "What's your return policy?" | query="return policy", document_type="policy", k=3 | Policy question |
-| "Refrigerator is making noise" | query="refrigerator making noise", document_type="blog", k=7 | Troubleshooting from blogs |
-| "Dishwasher won't drain water" | query="dishwasher not draining water", k=5 | Symptom-based search |
+**Symptoms covered:**
+Refrigerator: Ice maker issues, water dispenser, leaking, not cooling, noisy, temperature control, defrost problems
+Dishwasher: Leaking, won't drain, not cleaning, won't start, not filling, not drying, noisy, door issues
 """
 
 
@@ -77,44 +45,27 @@ class VectorSearchInput(BaseModel):
     """Input schema for vector search tool."""
 
     query: str = Field(
-        description=(
-            "Natural language search query. Use conversational language describing the problem, "
-            "question, or topic. Examples: 'ice maker not working', 'how to replace door seal', "
-            "'return policy'. Be specific for better results. Min 3 characters, max 500 characters."
-        )
+        description="Natural language search query describing the problem, question, or topic (3-500 chars)"
     )
 
     k: int = Field(
         default=5,
-        description=(
-            "Number of results to return. Range: 1-20. Default: 5. "
-            "Use 3-5 for specific questions, 7-10 for exploratory searches, 15-20 for comprehensive research."
-        )
+        description="Number of results to return (1-20, default 5)"
     )
 
     document_type: str = Field(
         default="all",
-        description=(
-            "Filter results by document type. Options: 'all' (no filter), 'blog' (troubleshooting articles), "
-            "'repair' (part-specific repair guides), 'policy' (company policies like returns/warranties). "
-            "Default: 'all'. Use filters when you know what type of information you need."
-        )
+        description="Filter by document type: 'all', 'blog', 'repair', or 'policy' (default 'all')"
     )
 
     appliance_type: str = Field(
         default="all",
-        description=(
-            "Filter results by appliance type. Options: 'all' (no filter), 'refrigerator', 'dishwasher'. "
-            "Default: 'all'. Use when the query is specific to one appliance type."
-        )
+        description="Filter by appliance: 'all', 'refrigerator', or 'dishwasher' (default 'all')"
     )
 
     include_score: bool = Field(
         default=False,
-        description=(
-            "Include relevance score in results (lower score = more relevant). "
-            "Default: False. Set to True for debugging or to assess result quality."
-        )
+        description="Include relevance score in results (default False)"
     )
 
     @field_validator('query')

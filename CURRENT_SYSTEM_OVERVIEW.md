@@ -40,19 +40,20 @@ User → Frontend (React) → Backend (FastAPI) → PostgreSQL Database
 **URL:** http://localhost:8000
 **Docs:** http://localhost:8000/docs
 
-**Active Endpoint:**
-- `POST /api/chat` - Main chat endpoint (receives text, returns text)
-
-**Inactive Endpoints:**
-- `GET /api/part/{part_id}` - Part details (exists but not used)
+**Active Endpoints:**
+- `POST /api/chat` - Main chat endpoint (AI agent-powered)
 - `GET /health` - Health check
 
 **Files:**
 - `app.py` - FastAPI server
-- `routes/chat.py` - Chat endpoint
-- `routes/parts.py` - Parts endpoint (disabled in frontend)
-- `services/chat_service.py` - Search logic
+- `routes/chat.py` - Chat endpoint with LangGraph agent
+- `routes/health.py` - Health check endpoint
+- `services/chat_service.py` - Legacy search logic
 - `services/database.py` - Database connection
+- `services/tool_call_logger.py` - Session logging
+- `agent/agent_config.py` - Agent configuration
+- `tools/sql_search_tool.py` - SQL database queries
+- `tools/vector_search_tool.py` - Vector similarity search
 
 ---
 
@@ -64,9 +65,9 @@ User → Frontend (React) → Backend (FastAPI) → PostgreSQL Database
 **User:** postgres
 
 **Tables:**
-- `parts` - 92 parts (refrigerator/dishwasher)
+- `parts` - 92 parts (refrigerator/dishwasher only)
 - `models` - 1,845 appliance models
-- `part_models` - 2,735 compatibility mappings
+- `part_model_mapping` - 2,735 compatibility mappings
 
 **Connection:** Configured via `.env` file
 
@@ -75,8 +76,14 @@ User → Frontend (React) → Backend (FastAPI) → PostgreSQL Database
 ## Data Flow
 
 1. User types message in frontend
-2. Frontend sends `POST /api/chat` with message text
-3. Backend searches PostgreSQL database
+2. Frontend sends `POST /api/chat` with message and conversation history
+3. Backend LangGraph agent processes request:
+   - Analyzes user query
+   - Calls appropriate tools (SQL or Vector search)
+   - Combines information from multiple sources
+   - Generates natural language response
+4. Agent response logged to session file
+5. Frontend displays text response
 4. Backend returns text response (may include product data in metadata)
 5. Frontend displays **only text** (ignores product metadata)
 

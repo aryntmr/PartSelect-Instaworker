@@ -19,3 +19,7 @@ ENV/
 # Environment files
 *.env
 *.env.local
+
+# Logs
+logs/
+*.log

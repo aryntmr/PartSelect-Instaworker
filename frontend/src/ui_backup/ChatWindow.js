@@ -72,10 +72,7 @@ function ChatWindow() {
           {isLoading && (
             <div className="assistant-message-container">
               <div className="message assistant-message">
-                <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                  <span className="loading-dots">Searching</span>
-                  <span className="loading-animation">...</span>
-                </div>
+                <div>Searching...</div>
               </div>
             </div>
           )}

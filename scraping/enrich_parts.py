@@ -62,6 +62,27 @@ def enrich_part(idx, url):
         page_source = driver.page_source
         soup = BeautifulSoup(page_source, 'lxml')
 
+        # Extract manufacturer part number from URL
+        # Format: PS12115595-Samsung-DA97-15217D-Ice-Maker-Assembly.htm
+        manufacturer_part_number = ''
+        if url:
+            filename = url.split('/')[-1].split('?')[0].replace('.htm', '')
+            parts = filename.split('-')
+            if len(parts) >= 4:
+                # Check if parts[3] is part of the manufacturer number (starts with digit/letter combo)
+                if parts[3] and (parts[3][0].isdigit() or (len(parts[3]) < 8 and parts[3][0].isupper())):
+                    manufacturer_part_number = parts[2] + '-' + parts[3]
+                else:
+                    manufacturer_part_number = parts[2]
+            elif len(parts) >= 3:
+                manufacturer_part_number = parts[2]
+
+        # Extract brand from Model Cross Reference section (full name like "General Electric")
+        brand = ''
+        crossref_brand = soup.select_one('.pd__crossref__list .row div')
+        if crossref_brand:
+            brand = crossref_brand.get_text().strip()
+
         # Extract price - handle both current and original (if discount exists)
         current_price = 0.0
         original_price = 0.0
@@ -79,14 +100,14 @@ def enrich_part(idx, url):
             if orig_price and orig_price > current_price:
                 original_price = orig_price
 
-        # Extract rating - count stars since no numeric rating shown
-        rating_elem = soup.select_one('.rating__stars, .rating')
-        if rating_elem:
-            star_text = rating_elem.get_text()
-            filled_stars = star_text.count('★')
-            rating = filled_stars / 2 if filled_stars > 0 else None
-        else:
-            rating = None
+        # Extract rating from meta tag
+        rating = None
+        rating_meta = soup.select_one('meta[itemprop="ratingValue"]')
+        if rating_meta:
+            try:
+                rating = float(rating_meta.get('content', ''))
+            except (ValueError, TypeError):
+                rating = None
 
         # Extract reviews
         review_elem = soup.select_one('.reviews, [class*="review"]')
@@ -133,7 +154,7 @@ def enrich_part(idx, url):
         # Extract compatible model numbers
         compatible_models = []
         crossref_list = soup.select('.pd__crossref__list .row')
-        for row in crossref_list[:100]:
+        for row in crossref_list:
             model_link = row.select_one('a[href*="/Models/"]')
             if model_link:
                 model_number = model_link.get_text().strip()
@@ -158,11 +179,13 @@ def enrich_part(idx, url):
                 video_url = video_iframes[0].get('src', '')
 
         result = {
+            'manufacturer_part_number': manufacturer_part_number,
+            'brand': brand,
             'current_price': current_price,
             'original_price': original_price,
             'rating': rating,
             'review_count': reviews,
-            'description': description[:500] if description else '',
+            'description': description,
             'symptoms': ' | '.join(symptoms) if symptoms else '',
             'replacement_parts': ' | '.join(replacement_parts) if replacement_parts else '',
             'installation_difficulty': install_difficulty,
@@ -200,7 +223,7 @@ with ThreadPoolExecutor(max_workers=3) as executor:
 print(f"\n💾 Updating {len(updates)} parts...")
 import json
 
-string_cols = ['description', 'symptoms', 'replacement_parts', 'installation_difficulty', 'installation_time', 'video_url', 'compatible_models_json']
+string_cols = ['manufacturer_part_number', 'brand', 'description', 'symptoms', 'replacement_parts', 'installation_difficulty', 'installation_time', 'video_url', 'compatible_models_json']
 numeric_cols = ['current_price', 'original_price', 'rating', 'review_count', 'compatible_models_count']
 
 for col in string_cols + numeric_cols:

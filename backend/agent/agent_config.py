@@ -7,12 +7,16 @@ Supports both OpenAI and Claude/Anthropic models
 import sys
 from pathlib import Path
 from typing import Optional, Literal
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv(Path(__file__).parent.parent / ".env")
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from langgraph.prebuilt import create_react_agent
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, AIMessage
 
 from tools.sql_search_tool import sql_search_tool
 from tools.vector_search_tool import vector_search_tool
@@ -31,7 +35,7 @@ Instructions:
   - NO → Make another tool call
 - Combine tools when helpful (e.g., repair guide from vector + part details from SQL)
 - If results are empty or irrelevant, try different query or different tool
-- Max 10 tool calls - use them efficiently
+- Max 5 tool calls - use them efficiently
 - Cite sources (URLs) in your final answer
 - Only refrigerator and dishwasher - reject other appliances
 
@@ -42,7 +46,7 @@ def create_partselect_agent(
     provider: Literal["openai", "anthropic", "claude"] = "claude",
     model_name: Optional[str] = None,
     temperature: float = 0.0,
-    max_iterations: int = 10,
+    max_iterations: int = 5,
     verbose: bool = True,
     api_key: Optional[str] = None
 ):
@@ -55,7 +59,7 @@ def create_partselect_agent(
             - OpenAI: "gpt-4o"
             - Claude/Anthropic: "claude-3-5-sonnet-20241022"
         temperature: Model temperature (default: 0 for deterministic)
-        max_iterations: Max tool calls before stopping (default: 10)
+        max_iterations: Max tool calls before stopping (default: 5)
         verbose: Print agent reasoning steps (default: True)
         api_key: API key (optional, uses OPENAI_API_KEY or ANTHROPIC_API_KEY env var)
 
@@ -106,22 +110,22 @@ def create_partselect_agent(
     return agent
 
 
-def run_query(agent, query: str) -> dict:
+def run_query(agent, messages: list) -> dict:
     """
-    Run a single query through the agent.
+    Run a query through the agent with conversation history.
 
     Args:
         agent: Configured LangGraph agent
-        query: User question
+        messages: List of LangChain message objects (HumanMessage, AIMessage)
 
     Returns:
         Dict with 'output' (final answer) and 'messages' (conversation history)
     """
     try:
-        # Run agent with query
+        # Run agent with message history
         result = agent.invoke(
-            {"messages": [HumanMessage(content=query)]},
-            config={"recursion_limit": 10}  # Max iterations
+            {"messages": messages},
+            config={"recursion_limit": 15}  # Increased to debug compatibility queries
         )
 
         # Extract final answer from messages

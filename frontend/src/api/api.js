@@ -1,16 +1,17 @@
 // Backend API base URL
 const API_BASE_URL = 'http://localhost:8000';
 
-export const getAIMessage = async (userQuery) => {
+export const getAIMessage = async (userQuery, conversationHistory = []) => {
   try {
-    // Call backend chat endpoint
+    // Call backend chat endpoint with conversation history
     const response = await fetch(`${API_BASE_URL}/api/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        message: userQuery
+        message: userQuery,
+        history: conversationHistory
       })
     });
 
